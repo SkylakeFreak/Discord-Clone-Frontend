@@ -11,29 +11,37 @@ function Loggedin() {
   const [array, setarray] = useState("");
   const [ansarray,anssetarray]=useState("")
   const [authorfriends, setauthofriends] = useState([]);
-
+  const socketRef = useRef(null);
+  socketRef.current = io("http://localhost:3003/service4");
   useEffect(()=>{
+    
     // if (isInitialRender) {
     //   setIsInitialRender(false);
     //   return;
     // }
-    const socket4 = io("http://localhost:3003/service4");
-    socket4.emit('joinRoom', "needroom");
-    
+    socketRef.current.emit('joinRoom', "needroom");
+   
 
-    // Listen for messages
-    socket4.emit('sendMessage', "needroom", array)
-    socket4.on('message', (message) => {
-      console.log(message)
-      
-    });
 
-      
-    
+  },[])
+
+  useEffect(()=>{
+    if (isInitialRender) {
+      setIsInitialRender(false);
+      return;
+    }
+    const sendmessage=()=>{
+      socketRef.current.emit('sendMessage', "needroom", array)
+     
   
-
-
+    }
+    sendmessage();
   },[array])
+
+  socketRef.current.on('message', (message) => {
+        console.log(message,"res")
+        
+      });
   
   
 
@@ -722,7 +730,7 @@ function Loggedin() {
                 <p className="flex justify-center -mt-10 text-lg">
                   Search for Channles and Group Channels
                 </p>
-                <button onClick={sendMes}></button>
+             
                 <div className="flex justify-center">
                   <input
                     placeholder="Where would you like to go?"
