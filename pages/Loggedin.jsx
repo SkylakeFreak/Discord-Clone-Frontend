@@ -8,40 +8,43 @@ import Image from "next/image";
 import { io } from "socket.io-client";
 import img1 from "../assets/discord-loader.gif";
 function Loggedin() {
+
+  console.log("USEEFFECT")
   const [array, setarray] = useState("");
+  const arrayRef = useRef([]);
   const [ansarray,anssetarray]=useState("")
   const [authorfriends, setauthofriends] = useState([]);
   const socketRef = useRef(null);
-  socketRef.current = io("http://localhost:3003/service4");
-  useEffect(()=>{
+  // socketRef.current = io("http://localhost:3003/service4");
+  // useEffect(()=>{
     
-    // if (isInitialRender) {
-    //   setIsInitialRender(false);
-    //   return;
-    // }
-    socketRef.current.emit('joinRoom', "needroom");
+  //   // if (isInitialRender) {
+  //   //   setIsInitialRender(false);
+  //   //   return;
+  //   // }
+  //   socketRef.current.emit('joinRoom', "needroom");
    
 
 
-  },[])
+  // },[])
 
-  useEffect(()=>{
-    if (isInitialRender) {
-      setIsInitialRender(false);
-      return;
-    }
-    const sendmessage=()=>{
-      socketRef.current.emit('sendMessage', "needroom", array)
+  // useEffect(()=>{
+  //   if (isInitialRender) {
+  //     setIsInitialRender(false);
+  //     return;
+  //   }
+  //   const sendmessage=()=>{
+  //     socketRef.current.emit('sendMessage', "needroom", array)
      
   
-    }
-    sendmessage();
-  },[array])
+  //   }
+  //   sendmessage();
+  // },[array])
 
-  socketRef.current.on('message', (message) => {
-        console.log(message,"res")
+  // socketRef.current.on('message', (message) => {
+  //       console.log(message,"res")
         
-      });
+  //     });
   
   
 
@@ -50,6 +53,7 @@ function Loggedin() {
   const appendToArrayInObject = (obj, key, newValue) => {
     (obj[key] ??= []).push(newValue);
     setarray(obj);
+    arrayRef.current=obj
     console.log(array);
   };
 
@@ -72,12 +76,14 @@ function Loggedin() {
   }, [active]);
   const [currentuser, setcurrentuser] = useState("");
   const [check, setcheck] = useState(false);
+  const [currentusername,setcurrentusername]=useState('');
   const fetchProtectedResource1 = async () => {
     try {
       const token = localStorage.getItem("token");
       const decoded = jwtDecode(token);
       console.log(decoded.displayname, "done");
-      setcurrentuser(decoded.displayname);
+      setcurrentuser(decoded.name);
+      setcurrentusername(decoded.username);
       setloader(true);
       const response = await fetch("http://localhost:3002/protected", {
         headers: {
@@ -156,7 +162,7 @@ function Loggedin() {
   const [storemessage, setstoremessage] = useState("");
   const [containuser, setcontainuser] = useState("");
   const [currentchatuser, setcurrentchatuser] = useState("");
-
+  const arrayRef1 = useRef([]);
   const addnewdiv = (event) => {
     event.preventDefault();
     appendToArrayInObject(array, currentchatuser, storemessage);
@@ -164,6 +170,7 @@ function Loggedin() {
   };
 
   const setnewmessage = (e) => {
+    
     setstoremessage(e.target.value);
   };
 
@@ -183,6 +190,12 @@ function Loggedin() {
   const [permavaluesend, setpermavaluesend] = useState("");
   const [changeperma, setchangeperma] = useState(false);
   const [tri, settri] = useState("");
+  const [refresh,setrefresh]=useState(false)
+
+  useEffect(()=>{
+    console.log(array,"updated")
+    arrayRef.current=array
+  },[array])
   useEffect(() => {
     const fetchrequest = async () => {
       const socket2 = io("http://localhost:3003/service2");
@@ -204,13 +217,46 @@ function Loggedin() {
           ...prevState,
           ...newArray,
         }));
+        console.log(arrayRef.current,"arrayref")
+        
 
         setcheckloader(false);
         socket2.close();
       });
     };
-    fetchrequest();
-  }, [currentuser]);
+    const intervalId = setInterval(()=>{
+      
+      fetchrequest();
+
+    }, 2000);
+    return () => clearInterval(intervalId);
+
+  }, [currentuser, refresh]);
+
+  // useEffect(() => {
+
+  //   const intervalId = setInterval(()=>{
+  //     console.log("refreshed")
+
+  //   }, 2000);
+
+  //   return () => clearInterval(intervalId);
+  // }, []); 
+
+useEffect(()=>{
+  if (setcheckloader)
+  if (arrayfriends.length>0){
+    
+
+    console.log(friendrequest,"test")
+    setfriendrequest(true);
+  
+}
+else{
+  setcheckloader(false)
+  setfriendrequest(false);
+}
+},[arrayfriends])
   useEffect(() => {
     console.log(array, "working");
   }, [array]);
@@ -656,7 +702,7 @@ function Loggedin() {
                           />
                           <p className="mt-3 text-3xl">{currentchatuser}</p>
                           <p className="mt-3 font-normal">
-                            {currentchatuser}_94702
+                            {currentchatuser} @ ID
                           </p>
                           <p className="text-sm font-normal mt-3">
                             This is the begining of your direct message with{" "}
@@ -670,7 +716,7 @@ function Loggedin() {
                           <div className="absolute bottom-0 w-full">
                             <div className="mb-5 p-2" id="container">
                               <div className="text-white font-bold text-lg">
-                                {currentuser}{("you")}
+                                {currentuser}
                               </div>
                               <div
                                 style={{
@@ -679,7 +725,7 @@ function Loggedin() {
                                 }}
                                 className="max-h-[500px] overflow-y-scroll"
                               >
-                                {array[currentchatuser].map((item, index) => (
+                                {arrayRef.current[currentchatuser].map((item, index) => (
                                   <div
                                     className="text-[#DBDEE1] text-md p-1 ml-2"
                                     key={index}
@@ -693,7 +739,7 @@ function Loggedin() {
                               <input
                                 onChange={setnewmessage}
                                 value={storemessage}
-                                placeholder="Message @ Harsh Sojitra"
+                                placeholder={currentuser}
                                 type="text"
                                 className="h-[50px] p-2 w-full text-white shadow-xl rounded-md bg-[#383A40]"
                               />
