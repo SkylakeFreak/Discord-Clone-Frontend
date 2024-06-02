@@ -8,10 +8,13 @@ import Image from "next/image";
 import { io } from "socket.io-client";
 import img1 from "../assets/discord-loader.gif";
 function Loggedin() {
+  const dataRef = useRef({});
+  const flagref=useRef(true);
 
   console.log("USEEFFECT")
-  const [array, setarray] = useState("");
-  const arrayRef = useRef([]);
+  console.log(dataRef.current.raj01,"start",dataRef.current)
+  console.log(dataRef.current,"init")
+  const [array, setarray] = useState(dataRef.current);
   const [ansarray,anssetarray]=useState("")
   const [authorfriends, setauthofriends] = useState([]);
   const socketRef = useRef(null);
@@ -52,9 +55,8 @@ function Loggedin() {
 
   const appendToArrayInObject = (obj, key, newValue) => {
     (obj[key] ??= []).push(newValue);
-    setarray(obj);
-    arrayRef.current=obj
-    console.log(array);
+    dataRef.current=obj
+    console.log(obj,"sddddddffdffffffffffff")
   };
 
   const [activestatus, setactivestatus] = useState("Idle");
@@ -63,13 +65,13 @@ function Loggedin() {
   const [arrayfriends, setarrayfriends] = useState([]);
   const change = () => {
     setTimeout(() => {
-      console.log("user is sleeped");
+      // console.log("user is sleeped");
       setactivestatus("Idle");
     }, timer);
   };
 
   useEffect(() => {
-    console.log("moved");
+    // console.log("moved");
     settimer(10800);
     setactivestatus("Online");
     change();
@@ -81,7 +83,7 @@ function Loggedin() {
     try {
       const token = localStorage.getItem("token");
       const decoded = jwtDecode(token);
-      console.log(decoded.displayname, "done");
+      // console.log(decoded.displayname, "done");
       setcurrentuser(decoded.name);
       setcurrentusername(decoded.username);
       setloader(true);
@@ -93,8 +95,8 @@ function Loggedin() {
 
       if (response.ok) {
         setcheck(true);
-        console.log("Protected data:");
-        console.log("sad12");
+        // console.log("Protected data:");
+        // console.log("sad12");
       } else {
         console.log("Error fetching protected resource1");
       }
@@ -112,7 +114,7 @@ function Loggedin() {
 
   useEffect(() => {
     let timer = setInterval(() => {
-      console.log("chekced");
+      // console.log("chekced");
 
       fetchProtectedResource1();
     }, 5000);
@@ -160,11 +162,12 @@ function Loggedin() {
   };
   const [div, setdiv] = useState([]);
   const [storemessage, setstoremessage] = useState("");
+  // console.log(storemessage,"storemessage")
   const [containuser, setcontainuser] = useState("");
   const [currentchatuser, setcurrentchatuser] = useState("");
-  const arrayRef1 = useRef([]);
   const addnewdiv = (event) => {
     event.preventDefault();
+    console.log("called")
     appendToArrayInObject(array, currentchatuser, storemessage);
     setstoremessage("");
   };
@@ -192,20 +195,16 @@ function Loggedin() {
   const [tri, settri] = useState("");
   const [refresh,setrefresh]=useState(false)
 
-  useEffect(()=>{
-    console.log(array,"updated")
-    arrayRef.current=array
-  },[array])
   useEffect(() => {
     const fetchrequest = async () => {
       const socket2 = io("http://localhost:3003/service2");
       socket2.on("connect", () => {
-        console.log("creaafds", currentuser);
+        // console.log("creaafds", currentuser);
         socket2.emit("requestfriend", currentuser);
       });
       socket2.on("requestfri", (data, auth) => {
         // console.log(data)
-        console.log(auth, "authoo");
+        // console.log(auth, "authoo");
         setauthofriends(auth);
         setarrayfriends(data);
 
@@ -213,11 +212,42 @@ function Loggedin() {
           acc[key] = [];
           return acc;
         }, {});
-        setarray((prevState) => ({
-          ...prevState,
-          ...newArray,
-        }));
-        console.log(arrayRef.current,"arrayref")
+        console.log(dataRef.current,"before")
+        
+        if (flagref.current==true){
+          flagref.current=false
+          dataRef.current = {
+            ...dataRef.current, // spread the previous data
+            ...newArray, // spread the new data to update
+          };
+
+        }
+       
+          // if (newArray[currentchatuser]===null){
+          //   console.log("empty");
+  
+          // }
+          // else{
+          // // console.log(newArray,newArray.raj01,"WDdsfsfa")
+          //   if (newArray.raj01.length==0){
+          //     console.log('pass')
+          //     dataRef.current=dataRef.current
+          //   }
+          //   else{
+          //     dataRef.current = {
+          //       ...dataRef.current, // spread the previous data
+          //       newArray, // spread the new data to update
+          //     };
+          //     console.log(dataRef.current,"sa1d")
+
+          //   }
+           
+  
+          // }
+
+        
+
+      
         
 
         setcheckloader(false);
@@ -231,7 +261,7 @@ function Loggedin() {
     }, 2000);
     return () => clearInterval(intervalId);
 
-  }, [currentuser, refresh]);
+  }, [currentuser]);
 
   // useEffect(() => {
 
@@ -248,7 +278,7 @@ useEffect(()=>{
   if (arrayfriends.length>0){
     
 
-    console.log(friendrequest,"test")
+    // console.log(friendrequest,"test")
     setfriendrequest(true);
   
 }
@@ -258,7 +288,7 @@ else{
 }
 },[arrayfriends])
   useEffect(() => {
-    console.log(array, "working");
+    // console.log(array, "working");
   }, [array]);
 
   useEffect(() => {
@@ -725,7 +755,7 @@ else{
                                 }}
                                 className="max-h-[500px] overflow-y-scroll"
                               >
-                                {arrayRef.current[currentchatuser].map((item, index) => (
+                                {dataRef.current.raj01.map((item, index) => (
                                   <div
                                     className="text-[#DBDEE1] text-md p-1 ml-2"
                                     key={index}
@@ -872,7 +902,7 @@ else{
                                       onClick={() => {
                                         setpermavaluesend(name);
                                         setchangeperma(!changeperma);
-                                        console.log("sendparmaserver");
+                                        // console.log("sendparmaserver");
                                       }}
                                       className="text-green-500 font-bold hover:text-green-800 cursor-pointer"
                                     >
