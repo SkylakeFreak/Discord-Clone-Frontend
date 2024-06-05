@@ -48,8 +48,11 @@
     
 }
 
-#openpopup,#loaderid{
+#openpopup,#loaderid,#my1,#my2,#my3,#my4{
     animation: popupopen 0.2s ease-in-out
+}
+#my1,#my2,#my3,#my4{
+    animation: popupopen 0.3s ease-in-out
 }
 #closepopup{
     animation: popupclose 0.2s ease-in-out
@@ -60,7 +63,7 @@
     animation: identifier 0.3s ease-in-out;
 }
 
-#main{
+#main,#me3{
     animation: identifier1 0.3s ease-in-out;
 
 }
