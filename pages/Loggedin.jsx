@@ -51,7 +51,7 @@ function Loggedin() {
   //     });
 
   const appendToArrayInObject = (obj, key, newValue) => {
-    (obj[key] ??= []).push(newValue);
+    (obj[key] ??= []).unshift(newValue);
     console.log("bef", dataRef.current);
     dataRef.current = obj;
     console.log("aft", dataRef.current);
@@ -863,7 +863,7 @@ function Loggedin() {
                                           "checkvefwew"
                                         );
                                       }
-                                      checkref1.current = 0;
+                                      // checkref1.current = 0;
                                       if (checkref2.current == 0) {
                                         checkref2.current += 1;
                                         {
@@ -907,6 +907,7 @@ function Loggedin() {
                                       }
                                     } else {
                                       checkref2.current = 0;
+                                    
                                     }
                                   }
                                 )}
