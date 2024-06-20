@@ -9,7 +9,6 @@ import { io } from "socket.io-client";
 import img1 from "../assets/discord-loader.gif";
 import { PassThrough } from "stream";
 function Loggedin() {
-
   const receivedref = useRef([]);
   console.log(receivedref.current, "sleeeeeeep");
   const dataRef = useRef({});
@@ -339,8 +338,8 @@ function Loggedin() {
 
   const [chatroom, setchatroom] = useState("erthneverexpire");
   const switchref = useRef(currentchatuser);
-  const checkref1 = useRef(0);
-  const checkref2 = useRef(0);
+  const checkref1 = useRef(false);
+  const checkref2 = useRef(false);
   // const dataref8 = useRef({
   //   "": [[""], ""],
   //   utkarsh: [
@@ -360,9 +359,10 @@ function Loggedin() {
   //   mihir01: [],
   // });
 
-  console.log("????????????")
-  console.log(dataRef.current[currentchatuser])
-  console.log("????????????")
+  console.log("????????????");
+  console.log(dataRef.current[currentchatuser]);
+  console.log("????????????");
+  console.log(dataRef.current[currentchatuser], "mainnlp");
 
   return (
     <div
@@ -781,7 +781,10 @@ function Loggedin() {
 
                       <div className="p-10"></div>
                       <div className="h-full">
-                        <div className="h-full relative w-full" id="scroll messages">
+                        <div
+                          className="h-full relative w-full"
+                          id="scroll messages"
+                        >
                           <div className="absolute bottom-0 w-full">
                             <div className="mb-5 p-2 w-full" id="container">
                               <div className="text-white font-bold text-lg"></div>
@@ -814,105 +817,158 @@ function Loggedin() {
                                     </p>
                                   </div>
                                 </div>
-                                <div className="h-[50vh] relative">
-                                {dataRef.current[currentchatuser].map(
-                                  (item, index) => {
-                                    if (Array.isArray(item)) {
-                                      if (checkref1.current == 0) {
-                                        checkref2.current = 0;
-                                        checkref1.current += 1;
-
+                                <div className="h-[40vh] relative">
+                                  {dataRef.current[currentchatuser].map(
+                                    (item, index) => {
+                                      if (Array.isArray(item)){
                                         return (
-                                          <div id="my4"
-                                          style={{ bottom: `${index * 4}rem` }}
-                                            className="text-[#DBDEE1] absolute bottom-0 z-20 flex mt-10 items-center justify-left   text-md p-1 ml-2"
-                                            key={index}
-                                          >
-                                            <div>
-                                              <div className="flex">
-                                              <Image
-                                                  className="h-10 rounded-3xl ml-1 w-10"
-                                                  src={img3}
-                                                  alt=""
-                                                ></Image>
-                                                <h1 className="flex items-center justify-center font-bold text-lg ml-2">{currentchatuser}</h1>
-                                                
-                                              </div>
-                                              {" "}
-                                             
-                                              <h1 className=" ml-12 text-md p-1">{item}</h1>
-                                            </div>
-                                          </div>
-                                        );
-                                      } else {
-                                        checkref1.current += 1;
-                                        return (
-                                          <div id="my3"
-                                          style={{ bottom: `${index * 4}rem` }}
+                                          <div
+                                            id="my3"
+                                            style={{
+                                              bottom: `${index * 4}rem`,
+                                            }}
                                             className="text-[#DBDEE1] absolute bottom-0 justify-left text-lg text-md p-1 ml-2"
                                             key={index}
                                           >
-                                            <h1 className=" ml-12 text-md p-1">{item}</h1>
+                                            <h1 className=" ml-12 text-md p-1">
+                                              {item}
+                                            </h1>
                                           </div>
                                         );
-                                      }
-                                    } else if (item != "") {
-                                      {
-                                        console.log(
-                                          checkref2.current,
-                                          "checkvefwew"
-                                        );
-                                      }
-                                      // checkref1.current = 0;
-                                      if (checkref2.current == 0) {
-                                        checkref2.current += 1;
-                                        {
-                                          console.log(
-                                            checkref2.current,
-                                            "asdhkhkhkhkhkhkhkhkhkhkhkhkhkhkhk"
-                                          );
-                                        }
-                                        return (
-                                          <div id="my2"
-                                          style={{ bottom: `${index * 4}rem` }}
-                                            className="text-[#59a9f9] mt-10  text-md p-1 absolute bottom-0 ml-2"
-                                            key={index}
-                                          >
-                                            <div>
-                                              <div className="flex">
-                                              <Image
-                                                  className="h-10 rounded-3xl ml-1 w-10"
-                                                  src={img3}
-                                                  alt=""
-                                                ></Image>
-                                               
-                                                <h1 className="flex items-center justify-center text-xl ml-2">{currentuser} {" "}{"(You)"}</h1>
 
-                                              </div>
-                                              <h1 className=" ml-12 text-md p-1">{item}</h1>
-                                            </div>
-                                          </div>
-                                        );
-                                      } else {
-                                        checkref2.current += 1;
+                                      }
+                                      else{
                                         return (
-                                          <div id="my1"
-                                          style={{ bottom: `${index * 4}rem` }}
-                                            className="text-[#59a9f9] absolute bottom-0  text-md p-1 ml-2"
+                                          <div
+                                            id="my3"
+                                            style={{
+                                              bottom: `${index * 4}rem`,
+                                            }}
+                                            className="text-[#DBDEE1] absolute bottom-0 justify-left text-lg text-md p-1 ml-2"
                                             key={index}
                                           >
-                                           <h1 className="text-md ml-12 p-1">{item}</h1>
+                                            <h1 className=" ml-12 text-blue-400 text-md p-1">
+                                              {item}
+                                            </h1>
                                           </div>
                                         );
                                       }
-                                    } else {
-                                      checkref2.current = 0;
-                                    
+                                      
+
+                                      // if (Array.isArray(item)) {
+                                      //   if (checkref1.current == 0) {
+                                      //     checkref2.current = 0;
+                                      //     checkref1.current += 1;
+
+                                      //     return (
+                                      //       <div
+                                      //         id="my4"
+                                      //         style={{
+                                      //           bottom: `${index * 4}rem`,
+                                      //         }}
+                                      //         className="text-[#DBDEE1] absolute bottom-0 z-20 flex mt-10 items-center justify-left   text-md p-1 ml-2"
+                                      //         key={index}
+                                      //       >
+                                      //         <div>
+                                      //           <div className="flex">
+                                      //             <Image
+                                      //               className="h-10 rounded-3xl ml-1 w-10"
+                                      //               src={img3}
+                                      //               alt=""
+                                      //             ></Image>
+                                      //             <h1 className="flex items-center justify-center font-bold text-lg ml-2">
+                                      //               {currentchatuser}
+                                      //             </h1>
+                                      //           </div>{" "}
+                                      //           <h1 className=" ml-12 text-md p-1">
+                                      //             {item}
+                                      //           </h1>
+                                      //         </div>
+                                      //       </div>
+                                      //     );
+                                      //   } else {
+                                      //     checkref1.current += 1;
+                                      //     return (
+                                      //       <div
+                                      //         id="my3"
+                                      //         style={{
+                                      //           bottom: `${index * 4}rem`,
+                                      //         }}
+                                      //         className="text-[#DBDEE1] absolute bottom-0 justify-left text-lg text-md p-1 ml-2"
+                                      //         key={index}
+                                      //       >
+                                      //         <h1 className=" ml-12 text-md p-1">
+                                      //           {item}
+                                      //         </h1>
+                                      //       </div>
+                                      //     );
+                                      //   }
+                                      // } else if (item != "") {
+                                      //   {
+                                      //     console.log(
+                                      //       checkref2.current,
+                                      //       "checkvefwew"
+                                      //     );
+                                      //   }
+                                      //   // checkref1.current = 0;
+                                      //   if (checkref2.current == 0) {
+                                      //     checkref2.current += 1;
+                                      //     {
+                                      //       console.log(
+                                      //         checkref2.current,
+                                      //         "asdhkhkhkhkhkhkhkhkhkhkhkhkhkhkhk"
+                                      //       );
+                                      //     }
+                                      //     return (
+                                      //       <div
+                                      //         id="my2"
+                                      //         style={{
+                                      //           bottom: `${index * 4}rem`,
+                                      //         }}
+                                      //         className="text-[#59a9f9] mt-10  text-md p-1 absolute bottom-0 ml-2"
+                                      //         key={index}
+                                      //       >
+                                      //         <div>
+                                      //           <div className="flex">
+                                      //             <Image
+                                      //               className="h-10 rounded-3xl ml-1 w-10"
+                                      //               src={img3}
+                                      //               alt=""
+                                      //             ></Image>
+
+                                      //             <h1 className="flex items-center justify-center text-xl ml-2">
+                                      //               {currentuser} {"(You)"}
+                                      //             </h1>
+                                      //           </div>
+                                      //           <h1 className=" ml-12 text-md p-1">
+                                      //             {item}
+                                      //           </h1>
+                                      //         </div>
+                                      //       </div>
+                                      //     );
+                                      //   } else {
+                                      //     checkref2.current += 1;
+                                      //     return (
+                                      //       <div
+                                      //         id="my1"
+                                      //         style={{
+                                      //           bottom: `${index * 4}rem`,
+                                      //         }}
+                                      //         className="text-[#59a9f9] absolute bottom-0  text-md p-1 ml-2"
+                                      //         key={index}
+                                      //       >
+                                      //         <h1 className="text-md ml-12 p-1">
+                                      //           {item}
+                                      //         </h1>
+                                      //       </div>
+                                      //     );
+                                      //   }
+                                      // } else {
+                                      //   checkref2.current = 0;
+                                      // }
                                     }
-                                  }
-                                )}
+                                  )}
                                 </div>
-                                
                               </div>
 
                               {/* <div
@@ -977,6 +1033,7 @@ function Loggedin() {
                 <div className="flex justify-center">
                   <input
                     placeholder="Where would you like to go?"
+                    a
                     className="h-[75px] placeholder-[#87898A] p-4 bg-[#1E1F22] text-xl text-white rounded-sm w-[500px] outline-none mt-7"
                     type="text"
                   />
@@ -1047,7 +1104,7 @@ function Loggedin() {
                         />
                       </div>
                     )}
-                    {loader && (
+                   {loader && (
                       <div className="flex items-center gap-x-3">
                         <div
                           style={{
@@ -1069,14 +1126,16 @@ function Loggedin() {
                                       onClick={() => {
                                         setpermavaluesend(name);
                                         setchangeperma(!changeperma);
-                                        // console.log("sendparmaserver");
+                                        console.log("sendparmaserver");
                                       }}
                                       className="text-green-500 font-bold hover:text-green-800 cursor-pointer"
                                     >
                                       A
+                                      
                                     </p>
                                     <p className="text-red-500 font-bold hover:text-red-800 cursor-pointer">
                                       R
+                                      
                                     </p>
                                   </div>
                                 </div>
@@ -1086,10 +1145,11 @@ function Loggedin() {
                         </div>
                       </div>
                     )}
+                        </div>
+                      </div>
+                    
                   </div>
                 </div>
-              </div>
-            </div>
           )}
         </div>
       )}
