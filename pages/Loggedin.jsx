@@ -7,42 +7,71 @@ import img3 from "../assets/0048cbfdd0b3ef186d22.png";
 import Image from "next/image";
 import { io } from "socket.io-client";
 import img1 from "../assets/discord-loader.gif";
+import { PassThrough } from "stream";
 function Loggedin() {
-  const [array, setarray] = useState("");
-  const [ansarray,anssetarray]=useState("")
+
+  const wsref=useRef({})
+
+  const receivedref = useRef([]);
+  var lastuser=null;
+  console.log(receivedref.current, "sleeeeeeep");
+  const dataRef = useRef({});
+  const flagref = useRef(true);
+  const sendref = useRef("");
+
+  console.log("USEEFFECT");
+  console.log(dataRef.current, "dataref");
+  const [array, setarray] = useState(dataRef.current);
+  const [ansarray, anssetarray] = useState("");
   const [authorfriends, setauthofriends] = useState([]);
+  const socketRef = useRef(null);
+  // socketRef.current = io("http://localhost:3003/service4");
+  // useEffect(()=>{
 
-  useEffect(()=>{
-    // if (isInitialRender) {
-    //   setIsInitialRender(false);
-    //   return;
-    // }
-    const socket4 = io("http://localhost:3003/service4");
-    socket4.emit('joinRoom', "needroom");
-    
+  //   // if (isInitialRender) {
+  //   //   setIsInitialRender(false);
+  //   //   return;
+  //   // }
+  //   socketRef.current.emit('joinRoom', "needroom");
 
-    // Listen for messages
-    socket4.emit('sendMessage', "needroom", array)
-    socket4.on('message', (message) => {
-      console.log(message)
-      
-    });
+  // },[])
 
-      
-    
-  
+  // useEffect(()=>{
+  //   if (isInitialRender) {
+  //     setIsInitialRender(false);
+  //     return;
+  //   }
+  //   const sendmessage=()=>{
+  //     socketRef.current.emit('sendMessage', "needroom", array)
 
+  //   }
+  //   sendmessage();
+  // },[array])
 
-  },[array])
-  
-  
+  // socketRef.current.on('message', (message) => {
+  //       console.log(message,"res")
 
-  
+  //     });
 
   const appendToArrayInObject = (obj, key, newValue) => {
-    (obj[key] ??= []).push(newValue);
-    setarray(obj);
-    console.log(array);
+    if (newValue!==""){
+      (obj[key] ??= []).push(newValue);
+      console.log("bef", dataRef.current);
+      dataRef.current = obj;
+      console.log("aft", dataRef.current,typeof(dataRef.current));
+      console.log(obj, "sddddddffdffffffffffff");
+      const socket5 = io("http://localhost:3003/service5");
+      socket5.on("connect", () => {
+      socket5.emit("redis", currentuser, dataRef.current);
+      console.log("data emitted successfully")
+      socket5.close();
+    });
+
+    }
+    else{
+      console.log("------------+")
+    }
+   
   };
 
   const [activestatus, setactivestatus] = useState("Idle");
@@ -51,25 +80,27 @@ function Loggedin() {
   const [arrayfriends, setarrayfriends] = useState([]);
   const change = () => {
     setTimeout(() => {
-      console.log("user is sleeped");
+      // console.log("user is sleeped");
       setactivestatus("Idle");
     }, timer);
   };
 
   useEffect(() => {
-    console.log("moved");
+    // console.log("moved");
     settimer(10800);
     setactivestatus("Online");
     change();
   }, [active]);
   const [currentuser, setcurrentuser] = useState("");
   const [check, setcheck] = useState(false);
+  const [currentusername, setcurrentusername] = useState("");
   const fetchProtectedResource1 = async () => {
     try {
       const token = localStorage.getItem("token");
       const decoded = jwtDecode(token);
-      console.log(decoded.displayname, "done");
-      setcurrentuser(decoded.displayname);
+      // console.log(decoded.displayname, "done");
+      setcurrentuser(decoded.name);
+      setcurrentusername(decoded.username);
       setloader(true);
       const response = await fetch("http://localhost:3002/protected", {
         headers: {
@@ -79,8 +110,8 @@ function Loggedin() {
 
       if (response.ok) {
         setcheck(true);
-        console.log("Protected data:");
-        console.log("sad12");
+        // console.log("Protected data:");
+        // console.log("sad12");
       } else {
         console.log("Error fetching protected resource1");
       }
@@ -98,7 +129,7 @@ function Loggedin() {
 
   useEffect(() => {
     let timer = setInterval(() => {
-      console.log("chekced");
+      // console.log("chekced");
 
       fetchProtectedResource1();
     }, 5000);
@@ -146,14 +177,34 @@ function Loggedin() {
   };
   const [div, setdiv] = useState([]);
   const [storemessage, setstoremessage] = useState("");
+  // console.log(storemessage,"storemessage")
   const [containuser, setcontainuser] = useState("");
   const [currentchatuser, setcurrentchatuser] = useState("");
+  const [changestate, setchangestate] = useState(false);
+  console.log(currentchatuser, "currentchatuser");
 
   const addnewdiv = (event) => {
     event.preventDefault();
-    appendToArrayInObject(array, currentchatuser, storemessage);
+    setchangestate(!changestate);
+    console.log("called");
+    appendToArrayInObject(dataRef.current, currentchatuser, storemessage);
+
+    sendref.current = storemessage;
     setstoremessage("");
   };
+
+  useEffect(() => {
+    if (isInitialRender) {
+      setIsInitialRender(false);
+      return;
+    }
+    appendToArrayInObject(
+      dataRef.current,
+      currentchatuser,
+      receivedref.current
+    );
+    receivedref.current = "";
+  }, [receivedref.current]);
 
   const setnewmessage = (e) => {
     setstoremessage(e.target.value);
@@ -167,6 +218,8 @@ function Loggedin() {
       socket1.close();
     });
   };
+
+
   const handlesendvaluechange = (e) => {
     setcontainuser(e.target.value);
   };
@@ -175,36 +228,120 @@ function Loggedin() {
   const [permavaluesend, setpermavaluesend] = useState("");
   const [changeperma, setchangeperma] = useState(false);
   const [tri, settri] = useState("");
+  const [refresh, setrefresh] = useState(false); 
+
   useEffect(() => {
     const fetchrequest = async () => {
       const socket2 = io("http://localhost:3003/service2");
       socket2.on("connect", () => {
-        console.log("creaafds", currentuser);
+        // console.log("creaafds", currentuser);
         socket2.emit("requestfriend", currentuser);
       });
       socket2.on("requestfri", (data, auth) => {
         // console.log(data)
-        console.log(auth, "authoo");
+        // console.log(auth, "authoo");
         setauthofriends(auth);
         setarrayfriends(data);
+        
 
         const newArray = auth.reduce((acc, key) => {
           acc[key] = [];
           return acc;
         }, {});
-        setarray((prevState) => ({
-          ...prevState,
-          ...newArray,
-        }));
+        console.log(dataRef.current, "before",typeof(dataRef.current),newArray);
+        
 
+        if (Object.keys(dataRef.current).length===0){
+          console.log("emptue")
+          const socket6=io("http://localhost:3003/service6");
+          socket6.on("connect",()=>{
+            socket6.emit("redisfetch", currentuser);
+            socket6.on("redisfetch1",(message)=>{
+              if (Object.keys(message).length===0){
+                dataRef.current={
+                  ...dataRef.current,...newArray
+                }
+
+              }else{
+                dataRef.current=message[0]
+
+              }
+              
+              // dataRef.current=message
+            })
+  
+            // socket6.close();
+      })
+          
+        }
+        else{
+          Object.keys(newArray).forEach((key) => {
+            console.log(key,"*-")
+              if (Object.keys(dataRef.current).length===Object.keys(newArray).length){
+                console.log("that user exists")
+              }
+              else{
+                console.log("pushed")
+                dataRef.current = {
+                  ...dataRef.current, // spread the previous data
+                  [key]:newArray[key] // spread the new data to update
+                };
+            
+  
+              }
+            })
+          
+          
+        }
         setcheckloader(false);
         socket2.close();
+       
+        
       });
     };
-    fetchrequest();
+    const intervalId = setInterval(() => {
+      fetchrequest();
+    }, 2000);
+    return () => clearInterval(intervalId);
   }, [currentuser]);
+
+  // useEffect(() => {
+
+  //   const intervalId = setInterval(()=>{
+  //     console.log("refreshed")
+
+  //   }, 2000);
+
+  //   return () => clearInterval(intervalId);
+  // }, []);
+  const [initialrender1,setrender]=useState(true);
+  // useEffect(()=>{
+
+  //     const socket6=io("http://localhost:3003/service6");
+  //       socket6.on("connect",()=>{
+  //         socket6.emit("redisfetch", currentuser);
+  //         socket6.on("redisfetch1",(message)=>{
+  //           dataRef.current=message[0]
+  //           // dataRef.current=message
+  //         })
+
+  //         // socket6.close();
+  //   })
+
+    
+  // },[])
   useEffect(() => {
-    console.log(array, "working");
+    if (setcheckloader)
+      if (arrayfriends.length > 0) {
+        // console.log(friendrequest,"test")
+        setfriendrequest(true);
+      } else {
+        setcheckloader(false);
+        setfriendrequest(false);
+      }
+  }, [arrayfriends]);
+  useEffect(() => {
+    // console.log(array, "working");
   }, [array]);
 
   useEffect(() => {
@@ -222,7 +359,65 @@ function Loggedin() {
     addedfriends();
   }, [changeperma]);
 
+  useEffect(() => {
+    const socket4 = io("http://localhost:3003/service4");
+
+    socket4.on("connect", () => {
+      console.log("Connected to service4");
+
+      socket4.emit("joinRoom", "alphabet");
+      socket4.emit("sendMessage", sendref.current);
+      socket4.on("message", (message) => {
+        if (message==="" || message.length<=0){
+          console.log("server is sending dupli values")
+        }
+        else{
+          receivedref.current = [...receivedref.current, message];
+
+        }
+       
+      });
+
+      // Closing the socket connection after a delay to ensure message sending
+      // setTimeout(() => {
+      //   socket4.close();
+      // }, 5000);
+    });
+
+
+
+    // Cleanup the socket connection on component unmount
+    return () => {
+      socket4.close();
+    };
+  }, [changestate]);
+
   const [chatroom, setchatroom] = useState("erthneverexpire");
+  // useEffect(() => {
+  //   Object.keys(dataRef.current).forEach((key) => {
+  //     if (authorfriends.includes(key)) {
+  //       console.log(`${key} exists`);
+  //     } else {
+  //       flagref.current = true;
+  //       console.log(`${key} does not exist`);
+  //     }
+  //   });
+  // }, [authorfriends,]);
+
+  // useEffect(()=>{
+  //   const socket6=io("http://localhost:3003/service6");
+  //   socket6.on("connect",()=>{
+  //     socket6.emit("redisfetch", currentuser);
+  //     // socket6.on("redisfetch1",(message)=>{
+  //     //   console.log(message,"receivedarrayfromdbs")
+  //     // })
+
+  //     // socket6.close();
+  //   })
+    
+
+  // },[])
+
 
   return (
     <div
@@ -374,7 +569,6 @@ function Loggedin() {
                       scrollbarWidth: "thin",
                       scrollbarColor: "#313338 #1E1F22",
                     }}
-                    id="usercontainer"
                   >
                     <ul>
                       {authorfriends.map((name, index) => (
@@ -630,48 +824,271 @@ function Loggedin() {
               <div className=" h-screen w-full text-black bg-black"></div>
             )}
             {messagepage && (
-              <div className=" h-screen w-full min-h-[450px] text-black bg-[#313338]">
+              <div
+                id="me3"
+                className=" h-screen w-full min-h-[450px] text-black bg-[#313338]"
+              >
                 <div className="flex flex-col h-full">
                   <div className="bg-black h-10 w-full"></div>
                   <div className="flex h-full flex-row">
                     <div className="bg-[#313338] flex flex-col h-full w-[80%]">
                       {/* changable div */}
-                      <div id="message inside changable div">
-                        <div
-                          className="p-10 text-white font-bold text-2xl"
-                          id="upper div"
-                        >
-                          <img
-                            className="h-20"
-                            src="https://cdn.logojoy.com/wp-content/uploads/20210422095037/discord-mascot.png"
-                            alt=""
-                          />
-                          <p className="mt-3 text-3xl">{currentchatuser}</p>
-                          <p className="mt-3 font-normal">
-                            {currentchatuser}_94702
-                          </p>
-                          <p className="text-sm font-normal mt-3">
-                            This is the begining of your direct message with{" "}
-                            {currentchatuser}.
-                          </p>
-                        </div>
-                      </div>
+
                       <div className="p-10"></div>
-                      <div className="p-10 h-full">
-                        <div className="h-full relative" id="scroll messages">
+                      <div className="h-full">
+                        <div
+                          className="h-full relative w-full"
+                          id="scroll messages"
+                        >
                           <div className="absolute bottom-0 w-full">
-                            <div className="mb-5 p-2" id="container">
-                              <div className="text-white font-bold text-lg">
-                                {currentuser}{("you")}
-                              </div>
+                            <div className="mb-5 p-2 w-full" id="container">
+                              <div className="text-white font-bold text-lg"></div>
                               <div
+                                style={{
+                                  scrollbarWidth: "thin",
+                                  scrollbarColor: "#313338 #1E1F22",
+                                }}
+                                className="h-[80vh] w-full overflow-y-scroll"
+                              >
+                                <div id="message inside changable div">
+                                  <div
+                                    className="p-10 text-white w-full font-bold text-2xl"
+                                    id="upper div"
+                                  >
+                                    <img
+                                      className="h-20"
+                                      src="https://cdn.logojoy.com/wp-content/uploads/20210422095037/discord-mascot.png"
+                                      alt=""
+                                    />
+                                    <p className="mt-3 text-3xl">
+                                      {currentchatuser}
+                                    </p>
+                                    <p className="mt-3 font-normal">
+                                      {currentchatuser} @ ID
+                                    </p>
+                                    <p className="text-sm font-normal mt-3">
+                                      This is the begining of your direct
+                                      message with {currentchatuser}.
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="h-[40vh] relative flex flex-col justify-end bg-black">
+                                  {
+                                    
+                                    dataRef.current[currentchatuser].map(
+                                      (item,index)=>{
+                                        let currentUser;
+                                        let shifter=false
+                                        if (Array.isArray(item)) {
+                                          currentUser = currentchatuser
+                                        } else {
+                                          currentUser = currentuser
+                                        }
+                                      if (currentUser===lastuser ){
+                                        shifter=false
+                                        
+                                      }
+                                      else{
+                                        shifter=true
+                                      }
+                                      
+                                      if (Array.isArray(item)){
+                                        lastuser=currentchatuser
+                                        return(
+                                          <div className=' bg-slate-400 w-full text-center' key={index}>
+                                            <div className='flex flex-col'>
+                                            {shifter && <strong>{lastuser}</strong>}
+                                            
+                                            {item}
+                          
+                                            </div>
+                                            
+                          
+                                          </div>
+                                        )
+                                      }
+                                      else{
+                                        lastuser=currentuser
+                                        return(
+                                          <div className='bg-slate-500 h-[50px] justify-center flex items-center w-full text-center' key={index}>
+                                              <div className='flex flex-col'>
+                                              {shifter && <strong>{lastuser}</strong>}
+                                              {item}
+                          
+                                              </div>
+                                            
+                          
+                                          </div>
+                                        )
+                                      }
+                                        
+
+
+                                      }
+                                    )
+                                  }
+
+
+
+
+                                  {/* {dataRef.current[currentchatuser].map(
+                                    (item, index) => {
+                                      if (Array.isArray(item)) {
+                                        return (
+                                          <div
+                                            id="my3"
+                                            style={{
+                                              bottom: `${index * 4}rem`,
+                                            }}
+                                            className="text-[#DBDEE1] absolute bottom-0 justify-left text-lg text-md p-1 ml-2"
+                                            key={index}
+                                          >
+                                            <h1 className=" ml-12 text-md p-1">
+                                              {item}
+                                            </h1>
+                                          </div>
+                                        );
+                                      } else {
+                                        return (
+                                          <div
+                                            id="my3"
+                                            style={{
+                                              bottom: `${index * 4}rem`,
+                                            }}
+                                            className="text-[#DBDEE1] absolute bottom-0 justify-left text-lg text-md p-1 ml-2"
+                                            key={index}
+                                          >
+                                            <h1 className=" ml-12 text-blue-400 text-md p-1">
+                                              {item}
+                                            </h1>
+                                          </div>
+                                        );
+                                      }
+
+                                      // if (Array.isArray(item)) {
+                                      //   if (checkref1.current == 0) {
+                                      //     checkref2.current = 0;
+                                      //     checkref1.current += 1;
+
+                                      //     return (
+                                      //       <div
+                                      //         id="my4"
+                                      //         style={{
+                                      //           bottom: `${index * 4}rem`,
+                                      //         }}
+                                      //         className="text-[#DBDEE1] absolute bottom-0 z-20 flex mt-10 items-center justify-left   text-md p-1 ml-2"
+                                      //         key={index}
+                                      //       >
+                                      //         <div>
+                                      //           <div className="flex">
+                                      //             <Image
+                                      //               className="h-10 rounded-3xl ml-1 w-10"
+                                      //               src={img3}
+                                      //               alt=""
+                                      //             ></Image>
+                                      //             <h1 className="flex items-center justify-center font-bold text-lg ml-2">
+                                      //               {currentchatuser}
+                                      //             </h1>
+                                      //           </div>{" "}
+                                      //           <h1 className=" ml-12 text-md p-1">
+                                      //             {item}
+                                      //           </h1>
+                                      //         </div>
+                                      //       </div>
+                                      //     );
+                                      //   } else {
+                                      //     checkref1.current += 1;
+                                      //     return (
+                                      //       <div
+                                      //         id="my3"
+                                      //         style={{
+                                      //           bottom: `${index * 4}rem`,
+                                      //         }}
+                                      //         className="text-[#DBDEE1] absolute bottom-0 justify-left text-lg text-md p-1 ml-2"
+                                      //         key={index}
+                                      //       >
+                                      //         <h1 className=" ml-12 text-md p-1">
+                                      //           {item}
+                                      //         </h1>
+                                      //       </div>
+                                      //     );
+                                      //   }
+                                      // } else if (item != "") {
+                                      //   {
+                                      //     console.log(
+                                      //       checkref2.current,
+                                      //       "checkvefwew"
+                                      //     );
+                                      //   }
+                                      //   // checkref1.current = 0;
+                                      //   if (checkref2.current == 0) {
+                                      //     checkref2.current += 1;
+                                      //     {
+                                      //       console.log(
+                                      //         checkref2.current,
+                                      //         "asdhkhkhkhkhkhkhkhkhkhkhkhkhkhkhk"
+                                      //       );
+                                      //     }
+                                      //     return (
+                                      //       <div
+                                      //         id="my2"
+                                      //         style={{
+                                      //           bottom: `${index * 4}rem`,
+                                      //         }}
+                                      //         className="text-[#59a9f9] mt-10  text-md p-1 absolute bottom-0 ml-2"
+                                      //         key={index}
+                                      //       >
+                                      //         <div>
+                                      //           <div className="flex">
+                                      //             <Image
+                                      //               className="h-10 rounded-3xl ml-1 w-10"
+                                      //               src={img3}
+                                      //               alt=""
+                                      //             ></Image>
+
+                                      //             <h1 className="flex items-center justify-center text-xl ml-2">
+                                      //               {currentuser} {"(You)"}
+                                      //             </h1>
+                                      //           </div>
+                                      //           <h1 className=" ml-12 text-md p-1">
+                                      //             {item}
+                                      //           </h1>
+                                      //         </div>
+                                      //       </div>
+                                      //     );
+                                      //   } else {
+                                      //     checkref2.current += 1;
+                                      //     return (
+                                      //       <div
+                                      //         id="my1"
+                                      //         style={{
+                                      //           bottom: `${index * 4}rem`,
+                                      //         }}
+                                      //         className="text-[#59a9f9] absolute bottom-0  text-md p-1 ml-2"
+                                      //         key={index}
+                                      //       >
+                                      //         <h1 className="text-md ml-12 p-1">
+                                      //           {item}
+                                      //         </h1>
+                                      //       </div>
+                                      //     );
+                                      //   }
+                                      // } else {
+                                      //   checkref2.current = 0;
+                                      // }
+                                    }
+                                  )} */}
+                                </div>
+                              </div>
+
+                              {/* <div
                                 style={{
                                   scrollbarWidth: "thin",
                                   scrollbarColor: "#313338 #1E1F22",
                                 }}
                                 className="max-h-[500px] overflow-y-scroll"
                               >
-                                {array[currentchatuser].map((item, index) => (
+                                {receivedref.current.reverse().map((item, index) => (
                                   <div
                                     className="text-[#DBDEE1] text-md p-1 ml-2"
                                     key={index}
@@ -679,13 +1096,13 @@ function Loggedin() {
                                     {item}
                                   </div>
                                 ))}
-                              </div>
+                              </div> */}
                             </div>{" "}
                             <form onSubmit={addnewdiv}>
                               <input
                                 onChange={setnewmessage}
                                 value={storemessage}
-                                placeholder="Message @ Harsh Sojitra"
+                                placeholder={currentuser}
                                 type="text"
                                 className="h-[50px] p-2 w-full text-white shadow-xl rounded-md bg-[#383A40]"
                               />
@@ -722,10 +1139,11 @@ function Loggedin() {
                 <p className="flex justify-center -mt-10 text-lg">
                   Search for Channles and Group Channels
                 </p>
-                <button onClick={sendMes}></button>
+
                 <div className="flex justify-center">
                   <input
                     placeholder="Where would you like to go?"
+                    a
                     className="h-[75px] placeholder-[#87898A] p-4 bg-[#1E1F22] text-xl text-white rounded-sm w-[500px] outline-none mt-7"
                     type="text"
                   />

@@ -1,16 +1,16 @@
 import React from 'react'
-import { useState } from 'react'
+import "@/app/globals.css";
 function Test() {
-    const [div,setdiv]=useState([]);
-
-    const addnewdiv=()=>{
-    const newdiv={id:div.length,content:`Div ${div.length+1}`}
-    setdiv([...div,newdiv]);
-    }
-   
   return (
-    <div>
-        <img src="https://discord.com/assets/0048cbfdd0b3ef186d22.png" alt="" />
+    <div className='flex items-center justify-center h-screen bg-black'>
+
+
+
+
+
+      <div className='h-[80vh] w-[80vw] bg-white relative'>
+        <div className='absolute bottom-0'>test</div>
+      </div>
     </div>
   )
 }
