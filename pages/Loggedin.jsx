@@ -9,7 +9,11 @@ import { io } from "socket.io-client";
 import img1 from "../assets/discord-loader.gif";
 import { PassThrough } from "stream";
 function Loggedin() {
+
+  const wsref=useRef({})
+
   const receivedref = useRef([]);
+  var lastuser=null;
   console.log(receivedref.current, "sleeeeeeep");
   const dataRef = useRef({});
   const flagref = useRef(true);
@@ -50,11 +54,24 @@ function Loggedin() {
   //     });
 
   const appendToArrayInObject = (obj, key, newValue) => {
-    (obj[key] ??= []).unshift(newValue);
-    console.log("bef", dataRef.current);
-    dataRef.current = obj;
-    console.log("aft", dataRef.current);
-    console.log(obj, "sddddddffdffffffffffff");
+    if (newValue!==""){
+      (obj[key] ??= []).push(newValue);
+      console.log("bef", dataRef.current);
+      dataRef.current = obj;
+      console.log("aft", dataRef.current,typeof(dataRef.current));
+      console.log(obj, "sddddddffdffffffffffff");
+      const socket5 = io("http://localhost:3003/service5");
+      socket5.on("connect", () => {
+      socket5.emit("redis", currentuser, dataRef.current);
+      console.log("data emitted successfully")
+      socket5.close();
+    });
+
+    }
+    else{
+      console.log("------------+")
+    }
+   
   };
 
   const [activestatus, setactivestatus] = useState("Idle");
@@ -201,6 +218,8 @@ function Loggedin() {
       socket1.close();
     });
   };
+
+
   const handlesendvaluechange = (e) => {
     setcontainuser(e.target.value);
   };
@@ -209,7 +228,7 @@ function Loggedin() {
   const [permavaluesend, setpermavaluesend] = useState("");
   const [changeperma, setchangeperma] = useState(false);
   const [tri, settri] = useState("");
-  const [refresh, setrefresh] = useState(false);
+  const [refresh, setrefresh] = useState(false); 
 
   useEffect(() => {
     const fetchrequest = async () => {
@@ -223,45 +242,61 @@ function Loggedin() {
         // console.log(auth, "authoo");
         setauthofriends(auth);
         setarrayfriends(data);
+        
 
         const newArray = auth.reduce((acc, key) => {
           acc[key] = [];
           return acc;
         }, {});
-        console.log(dataRef.current, "before");
+        console.log(dataRef.current, "before",typeof(dataRef.current),newArray);
+        
 
-        if (flagref.current == true) {
-          flagref.current = false;
-          dataRef.current = {
-            ...dataRef.current, // spread the previous data
-            ...newArray, // spread the new data to update
-          };
+        if (Object.keys(dataRef.current).length===0){
+          console.log("emptue")
+          const socket6=io("http://localhost:3003/service6");
+          socket6.on("connect",()=>{
+            socket6.emit("redisfetch", currentuser);
+            socket6.on("redisfetch1",(message)=>{
+              if (Object.keys(message).length===0){
+                dataRef.current={
+                  ...dataRef.current,...newArray
+                }
+
+              }else{
+                dataRef.current=message[0]
+
+              }
+              
+              // dataRef.current=message
+            })
+  
+            // socket6.close();
+      })
+          
         }
-        console.log("after");
-
-        // if (newArray[currentchatuser]===null){
-        //   console.log("empty");
-
-        // }
-        // else{
-        // // console.log(newArray,newArray.raj01,"WDdsfsfa")
-        //   if (newArray.raj01.length==0){
-        //     console.log('pass')
-        //     dataRef.current=dataRef.current
-        //   }
-        //   else{
-        //     dataRef.current = {
-        //       ...dataRef.current, // spread the previous data
-        //       newArray, // spread the new data to update
-        //     };
-        //     console.log(dataRef.current,"sa1d")
-
-        //   }
-
-        // }
-
+        else{
+          Object.keys(newArray).forEach((key) => {
+            console.log(key,"*-")
+              if (Object.keys(dataRef.current).length===Object.keys(newArray).length){
+                console.log("that user exists")
+              }
+              else{
+                console.log("pushed")
+                dataRef.current = {
+                  ...dataRef.current, // spread the previous data
+                  [key]:newArray[key] // spread the new data to update
+                };
+            
+  
+              }
+            })
+          
+          
+        }
         setcheckloader(false);
         socket2.close();
+       
+        
       });
     };
     const intervalId = setInterval(() => {
@@ -279,7 +314,22 @@ function Loggedin() {
 
   //   return () => clearInterval(intervalId);
   // }, []);
+  const [initialrender1,setrender]=useState(true);
+  // useEffect(()=>{
 
+  //     const socket6=io("http://localhost:3003/service6");
+  //       socket6.on("connect",()=>{
+  //         socket6.emit("redisfetch", currentuser);
+  //         socket6.on("redisfetch1",(message)=>{
+  //           dataRef.current=message[0]
+  //           // dataRef.current=message
+  //         })
+
+  //         // socket6.close();
+  //   })
+
+    
+  // },[])
   useEffect(() => {
     if (setcheckloader)
       if (arrayfriends.length > 0) {
@@ -318,8 +368,14 @@ function Loggedin() {
       socket4.emit("joinRoom", "alphabet");
       socket4.emit("sendMessage", sendref.current);
       socket4.on("message", (message) => {
-        console.log(message, "preciousssssss");
-        receivedref.current = [...receivedref.current, message];
+        if (message==="" || message.length<=0){
+          console.log("server is sending dupli values")
+        }
+        else{
+          receivedref.current = [...receivedref.current, message];
+
+        }
+       
       });
 
       // Closing the socket connection after a delay to ensure message sending
@@ -328,7 +384,7 @@ function Loggedin() {
       // }, 5000);
     });
 
-    console.log(sendref.current, "storemessage");
+
 
     // Cleanup the socket connection on component unmount
     return () => {
@@ -337,32 +393,31 @@ function Loggedin() {
   }, [changestate]);
 
   const [chatroom, setchatroom] = useState("erthneverexpire");
-  const switchref = useRef(currentchatuser);
-  const checkref1 = useRef(false);
-  const checkref2 = useRef(false);
-  // const dataref8 = useRef({
-  //   "": [[""], ""],
-  //   utkarsh: [
-  //     "hello",
-  //     "how are you",
-  //     "why not replying",
-  //     ["yes i am here only"],
-  //     ["dont be angry with me"],
-  //     "nah i am not angry",
-  //     "you seem to be",
-  //     ["next time will take care"],
-  //     "okay",
-  //     ["see you then"],
-  //     "yeah bitch",
-  //     ["good night"],
-  //   ],
-  //   mihir01: [],
-  // });
+  // useEffect(() => {
+  //   Object.keys(dataRef.current).forEach((key) => {
+  //     if (authorfriends.includes(key)) {
+  //       console.log(`${key} exists`);
+  //     } else {
+  //       flagref.current = true;
+  //       console.log(`${key} does not exist`);
+  //     }
+  //   });
+  // }, [authorfriends,]);
 
-  console.log("????????????");
-  console.log(dataRef.current[currentchatuser]);
-  console.log("????????????");
-  console.log(dataRef.current[currentchatuser], "mainnlp");
+  // useEffect(()=>{
+  //   const socket6=io("http://localhost:3003/service6");
+  //   socket6.on("connect",()=>{
+  //     socket6.emit("redisfetch", currentuser);
+  //     // socket6.on("redisfetch1",(message)=>{
+  //     //   console.log(message,"receivedarrayfromdbs")
+  //     // })
+
+  //     // socket6.close();
+  //   })
+    
+
+  // },[])
+
 
   return (
     <div
@@ -817,10 +872,68 @@ function Loggedin() {
                                     </p>
                                   </div>
                                 </div>
-                                <div className="h-[40vh] relative">
-                                  {dataRef.current[currentchatuser].map(
-                                    (item, index) => {
+                                <div className="h-[40vh] relative flex flex-col justify-end bg-black">
+                                  {
+                                    
+                                    dataRef.current[currentchatuser].map(
+                                      (item,index)=>{
+                                        let currentUser;
+                                        let shifter=false
+                                        if (Array.isArray(item)) {
+                                          currentUser = currentchatuser
+                                        } else {
+                                          currentUser = currentuser
+                                        }
+                                      if (currentUser===lastuser ){
+                                        shifter=false
+                                        
+                                      }
+                                      else{
+                                        shifter=true
+                                      }
+                                      
                                       if (Array.isArray(item)){
+                                        lastuser=currentchatuser
+                                        return(
+                                          <div className=' bg-slate-400 w-full text-center' key={index}>
+                                            <div className='flex flex-col'>
+                                            {shifter && <strong>{lastuser}</strong>}
+                                            
+                                            {item}
+                          
+                                            </div>
+                                            
+                          
+                                          </div>
+                                        )
+                                      }
+                                      else{
+                                        lastuser=currentuser
+                                        return(
+                                          <div className='bg-slate-500 h-[50px] justify-center flex items-center w-full text-center' key={index}>
+                                              <div className='flex flex-col'>
+                                              {shifter && <strong>{lastuser}</strong>}
+                                              {item}
+                          
+                                              </div>
+                                            
+                          
+                                          </div>
+                                        )
+                                      }
+                                        
+
+
+                                      }
+                                    )
+                                  }
+
+
+
+
+                                  {/* {dataRef.current[currentchatuser].map(
+                                    (item, index) => {
+                                      if (Array.isArray(item)) {
                                         return (
                                           <div
                                             id="my3"
@@ -835,9 +948,7 @@ function Loggedin() {
                                             </h1>
                                           </div>
                                         );
-
-                                      }
-                                      else{
+                                      } else {
                                         return (
                                           <div
                                             id="my3"
@@ -853,7 +964,6 @@ function Loggedin() {
                                           </div>
                                         );
                                       }
-                                      
 
                                       // if (Array.isArray(item)) {
                                       //   if (checkref1.current == 0) {
@@ -967,7 +1077,7 @@ function Loggedin() {
                                       //   checkref2.current = 0;
                                       // }
                                     }
-                                  )}
+                                  )} */}
                                 </div>
                               </div>
 
@@ -1104,7 +1214,7 @@ function Loggedin() {
                         />
                       </div>
                     )}
-                   {loader && (
+                    {loader && (
                       <div className="flex items-center gap-x-3">
                         <div
                           style={{
@@ -1131,11 +1241,9 @@ function Loggedin() {
                                       className="text-green-500 font-bold hover:text-green-800 cursor-pointer"
                                     >
                                       A
-                                      
                                     </p>
                                     <p className="text-red-500 font-bold hover:text-red-800 cursor-pointer">
                                       R
-                                      
                                     </p>
                                   </div>
                                 </div>
@@ -1145,11 +1253,10 @@ function Loggedin() {
                         </div>
                       </div>
                     )}
-                        </div>
-                      </div>
-                    
                   </div>
                 </div>
+              </div>
+            </div>
           )}
         </div>
       )}
