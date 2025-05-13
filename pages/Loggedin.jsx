@@ -299,10 +299,7 @@ function Loggedin() {
         
       });
     };
-    const intervalId = setInterval(() => {
-      fetchrequest();
-    }, 2000);
-    return () => clearInterval(intervalId);
+   fetchrequest();
   }, [currentuser]);
 
   // useEffect(() => {
@@ -359,38 +356,7 @@ function Loggedin() {
     addedfriends();
   }, [changeperma]);
 
-  useEffect(() => {
-    const socket4 = io("http://localhost:3003/service4");
-
-    socket4.on("connect", () => {
-      console.log("Connected to service4");
-
-      socket4.emit("joinRoom", "alphabet");
-      socket4.emit("sendMessage", sendref.current);
-      socket4.on("message", (message) => {
-        if (message==="" || message.length<=0){
-          console.log("server is sending dupli values")
-        }
-        else{
-          receivedref.current = [...receivedref.current, message];
-
-        }
-       
-      });
-
-      // Closing the socket connection after a delay to ensure message sending
-      // setTimeout(() => {
-      //   socket4.close();
-      // }, 5000);
-    });
-
-
-
-    // Cleanup the socket connection on component unmount
-    return () => {
-      socket4.close();
-    };
-  }, [changestate]);
+  
 
   const [chatroom, setchatroom] = useState("erthneverexpire");
   // useEffect(() => {
